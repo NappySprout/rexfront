@@ -1,13 +1,15 @@
-FROM node:16.7-alpine AS build
+FROM node:lts-alpine3.17 AS build
 
 WORKDIR /app
 COPY . .
 RUN yarn
 RUN yarn build
 
-FROM nginx:1.18-alpine AS deploy-static
+FROM node:lts-alpine3.17 AS deploy-node
 
-WORKDIR /usr/share/nginx/html
+WORKDIR /app
 RUN rm -rf ./*
+COPY --from=build /app/package.json .
 COPY --from=build /app/build .
-ENTRYPOINT [ "nginx", "-g", "daemon off;"]
+RUN yarn --prod
+ENTRYPOINT [ "node", "index.js"]
