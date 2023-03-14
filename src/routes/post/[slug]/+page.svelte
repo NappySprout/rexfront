@@ -6,11 +6,18 @@
 	import { onMount } from 'svelte';
 	import AddComment from '$lib/AddComment.svelte';
 	let comments = [];
+	let posts = [];
+	const seePosts = async (val) => {
+		val = !val?"":val
+		const res = await fetch(`http://${PUBLIC_BACKEND}:${PUBLIC_BACKEND_PORT}/view/posts?group=${val}`);
+		posts = await res.json();
+	} 
 	onMount(async () => {
 		const res = await fetch(
 			`http://${PUBLIC_BACKEND}:${PUBLIC_BACKEND_PORT}/view/comments?postid=${$page.params.slug}`
 		);
 		comments = await res.json();
+		await seePosts()
 	});
 
 	const handleOnSubmit = async (e) => {
@@ -34,9 +41,8 @@
 		}
 	};
 </script>
-
 <div class="flex justify-around p-4 m-8 card items-center">
-	<Card />
+	<Card post={posts.filter(p=>p.id == $page.params.slug)[0]}/>
 	<div class="flex h-96 overflow-auto flex-col gap-4 p-4">
 		{#each comments as comment}
 			<div class="card p-4 max-w-lg">
